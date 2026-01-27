@@ -44,11 +44,9 @@ Write-Host ""
 Write-Host "Démarrage des services Docker..." -ForegroundColor Cyan
 Write-Host "" -ForegroundColor Cyan
 
-
-
 # Construire et démarrer les services# Construire et démarrer les services
 
-docker-compose up --build -ddocker-compose up --build -d
+docker-compose up --build -d
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "" -ForegroundColor Cyan
