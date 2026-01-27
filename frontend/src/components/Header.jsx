@@ -1,0 +1,69 @@
+import { LogOut, Menu, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useStore } from "../store/useStore";
+
+export default function Header({
+  selectedAgent,
+  agents,
+  onSelectAgent,
+  onToggleSidebar,
+}) {
+  const navigate = useNavigate();
+  const { user, logout } = useStore();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  return (
+    <div className="bg-chat-bg border-b border-gray-700 p-4 flex items-center justify-between text-white">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onToggleSidebar}
+          className="p-2 hover:bg-white/10 rounded-lg"
+        >
+          <Menu size={20} />
+        </button>
+        <select
+          value={selectedAgent?.id || ""}
+          onChange={(e) => {
+            const agent = agents.find((a) => a.id === parseInt(e.target.value));
+            onSelectAgent(agent);
+          }}
+          className="bg-input-bg text-white rounded-lg px-4 py-2 border border-gray-600 focus:outline-none focus:border-gray-500"
+        >
+          <option value="">Sélectionner un agent</option>
+          {agents.map((agent) => (
+            <option key={agent.id} value={agent.id}>
+              {agent.name} ({agent.llm_model})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex items-center gap-3">
+        {user && (
+          <span className="text-sm text-gray-300">👤 {user.username}</span>
+        )}
+
+        <button
+          onClick={() => navigate("/admin")}
+          className="flex items-center gap-2 bg-transparent border border-white/20 hover:bg-white/10 px-4 py-2 rounded-lg"
+        >
+          <Settings size={18} />
+          <span>Admin</span>
+        </button>
+
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition"
+          title="Déconnexion"
+        >
+          <LogOut size={18} />
+          <span>Déconnexion</span>
+        </button>
+      </div>
+    </div>
+  );
+}
