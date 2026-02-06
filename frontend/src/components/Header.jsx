@@ -4,12 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useStore } from "../store/useStore";
 import AutoChatModal from "./AutoChatModal";
 
-export default function Header({
-  selectedAgent,
-  agents,
-  onSelectAgent,
-  onToggleSidebar,
-}) {
+export default function Header({ agents, onToggleSidebar }) {
   const navigate = useNavigate();
   const { user, logout } = useStore();
   const [showAutoChat, setShowAutoChat] = useState(false);
@@ -29,23 +24,6 @@ export default function Header({
           >
             <Menu size={20} />
           </button>
-          <select
-            value={selectedAgent?.id || ""}
-            onChange={(e) => {
-              const agent = agents.find(
-                (a) => a.id === parseInt(e.target.value),
-              );
-              onSelectAgent(agent);
-            }}
-            className="bg-input-bg text-white rounded-lg px-4 py-2 border border-gray-600 focus:outline-none focus:border-gray-500"
-          >
-            <option value="">Sélectionner un agent</option>
-            {agents.map((agent) => (
-              <option key={agent.id} value={agent.id}>
-                {agent.name} ({agent.llm_model})
-              </option>
-            ))}
-          </select>
         </div>
 
         <div className="flex items-center gap-3">
@@ -54,24 +32,35 @@ export default function Header({
           )}
 
           {/* Bouton Auto-Chat - visible uniquement pour les admins */}
-          {user && (user.is_staff || user.is_superuser) && (
-            <button
-              onClick={() => setShowAutoChat(true)}
-              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition"
-              title="Mode Auto-Chat"
-            >
-              <Zap size={18} />
-              <span className="hidden md:inline">Auto-Chat</span>
-            </button>
-          )}
+          {user &&
+            (user.is_admin ||
+              user.is_staff ||
+              user.is_superuser ||
+              (user.groups && user.groups.includes("Administrators"))) && (
+              <button
+                onClick={() => setShowAutoChat(true)}
+                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition"
+                title="Mode Auto-Chat"
+              >
+                <Zap size={18} />
+                <span className="hidden md:inline">Auto-Chat</span>
+              </button>
+            )}
 
-          <button
-            onClick={() => navigate("/admin")}
-            className="flex items-center gap-2 bg-transparent border border-white/20 hover:bg-white/10 px-4 py-2 rounded-lg"
-          >
-            <Settings size={18} />
-            <span className="hidden md:inline">Admin</span>
-          </button>
+          {/* Bouton Admin - visible uniquement pour les admins */}
+          {user &&
+            (user.is_admin ||
+              user.is_staff ||
+              user.is_superuser ||
+              (user.groups && user.groups.includes("Administrators"))) && (
+              <button
+                onClick={() => navigate("/admin")}
+                className="flex items-center gap-2 bg-transparent border border-white/20 hover:bg-white/10 px-4 py-2 rounded-lg"
+              >
+                <Settings size={18} />
+                <span className="hidden md:inline">Admin</span>
+              </button>
+            )}
 
           <button
             onClick={handleLogout}

@@ -6,7 +6,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from agents.auth_views import login_view, logout_view, me_view
+from agents.auth_views import login_view, logout_view, me_view, register_view
 from django.http import JsonResponse
 
 
@@ -25,4 +25,5 @@ urlpatterns = [
     path("api/auth/login/", login_view, name="login"),
     path("api/auth/logout/", logout_view, name="logout"),
     path("api/auth/me/", me_view, name="me"),
+    path("api/register/", register_view, name="register"),
 ]

@@ -150,14 +150,15 @@ export default function ChatPage() {
       )}
 
       <div className="flex-1 flex flex-col">
-        <Header
-          selectedAgent={selectedAgent}
-          agents={agents}
-          onSelectAgent={setSelectedAgent}
-          onToggleSidebar={toggleSidebar}
-        />
+        <Header agents={agents} onToggleSidebar={toggleSidebar} />
 
-        <ChatWindow messages={messages} isLoading={isLoading} />
+        <ChatWindow
+          messages={messages}
+          isLoading={isLoading}
+          agents={agents}
+          selectedAgent={selectedAgent}
+          onSelectAgent={setSelectedAgent}
+        />
 
         <ChatInput
           onSendMessage={handleSendMessage}

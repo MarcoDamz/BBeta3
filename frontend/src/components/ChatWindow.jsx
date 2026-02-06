@@ -2,7 +2,13 @@ import { format } from "date-fns";
 import { Bot, User } from "lucide-react";
 import { useEffect, useRef } from "react";
 
-export default function ChatWindow({ messages, isLoading }) {
+export default function ChatWindow({
+  messages,
+  isLoading,
+  agents,
+  selectedAgent,
+  onSelectAgent,
+}) {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -12,10 +18,43 @@ export default function ChatWindow({ messages, isLoading }) {
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-4">
       {messages.length === 0 ? (
-        <div className="flex items-center justify-center h-full text-gray-400">
-          <div className="text-center">
-            <Bot size={48} className="mx-auto mb-4 opacity-50" />
-            <p>Sélectionnez un agent et commencez une conversation</p>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center max-w-md w-full px-4">
+            <Bot size={64} className="mx-auto mb-6 text-green-500 opacity-80" />
+            <h2 className="text-2xl font-semibold text-white mb-4">
+              Commencez une conversation
+            </h2>
+            <p className="text-gray-400 mb-8">
+              Sélectionnez un agent IA pour démarrer une nouvelle discussion
+            </p>
+
+            <div className="w-full">
+              <select
+                value={selectedAgent?.id || ""}
+                onChange={(e) => {
+                  const agent = agents.find(
+                    (a) => a.id === parseInt(e.target.value),
+                  );
+                  if (agent) onSelectAgent(agent);
+                }}
+                className="w-full bg-input-bg border border-gray-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-green-500 transition-colors"
+              >
+                <option value="">Choisir un agent...</option>
+                {agents.map((agent) => (
+                  <option key={agent.id} value={agent.id}>
+                    {agent.name} - {agent.llm_model}
+                  </option>
+                ))}
+              </select>
+
+              {selectedAgent && (
+                <div className="mt-4 p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-left">
+                  <p className="text-sm text-gray-300">
+                    {selectedAgent.description}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       ) : (

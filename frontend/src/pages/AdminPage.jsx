@@ -1,4 +1,4 @@
-import { ArrowLeft, Copy, Plus, Trash2, Zap } from "lucide-react";
+import { ArrowLeft, Copy, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { agentsAPI, llmAPI } from "../services/api";
@@ -265,16 +265,6 @@ export default function AdminPage() {
                 )}
             </div>
           ))}
-        </div>
-
-        <div className="p-4 border-t border-gray-700">
-          <button
-            onClick={() => setShowAutoChat(true)}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-lg p-3 flex items-center justify-center gap-2"
-          >
-            <Zap size={20} />
-            <span>Mode Auto-Chat</span>
-          </button>
         </div>
       </div>
 

@@ -1,16 +1,20 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useStore } from "../store/useStore";
 
 function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const setUser = useStore((state) => state.setUser);
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState(
+    location.state?.message || "",
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -19,6 +23,7 @@ function LoginPage() {
       [e.target.name]: e.target.value,
     });
     setError("");
+    setSuccessMessage("");
   };
 
   const handleSubmit = async (e) => {
@@ -60,6 +65,12 @@ function LoginPage() {
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
             Connexion
           </h2>
+
+          {successMessage && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-600 text-sm">{successMessage}</p>
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -142,6 +153,19 @@ function LoginPage() {
               )}
             </button>
           </form>
+
+          {/* Register Link */}
+          <div className="mt-6 text-center">
+            <p className="text-gray-600 text-sm">
+              Pas encore de compte ?{" "}
+              <button
+                onClick={() => navigate("/register")}
+                className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200"
+              >
+                S'inscrire
+              </button>
+            </p>
+          </div>
 
           {/* Info */}
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
