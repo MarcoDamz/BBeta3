@@ -1,0 +1,39 @@
+# Dockerfile optimisé pour Cloud Run
+# Stage 1: Build
+FROM node:20-alpine as builder
+
+WORKDIR /app
+
+# Installation des dépendances
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Copie du code source
+COPY . .
+
+# Build de production avec variables d'environnement
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+RUN npm run build
+
+# Stage 2: Production avec Nginx
+FROM nginx:alpine
+
+# Installation de gettext pour envsubst
+RUN apk add --no-cache gettext
+
+# Copie des fichiers build
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Configuration Nginx pour Cloud Run
+COPY nginx.cloudrun.conf /etc/nginx/templates/default.conf.template
+
+# Script de démarrage
+COPY docker-entrypoint-cloudrun.sh /docker-entrypoint-cloudrun.sh
+RUN chmod +x /docker-entrypoint-cloudrun.sh
+
+# Exposition du port (Cloud Run utilise PORT=8080 par défaut)
+ENV PORT=8080
+EXPOSE 8080
+
+ENTRYPOINT ["/docker-entrypoint-cloudrun.sh"]

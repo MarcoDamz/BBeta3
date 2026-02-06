@@ -19,6 +19,7 @@ export default function ChatPage() {
     messages,
     setMessages,
     addMessage,
+    updateMessage,
     isSidebarOpen,
     toggleSidebar,
   } = useStore();
@@ -77,13 +78,33 @@ export default function ChatPage() {
     }
   };
 
+  const handleNewConversation = () => {
+    setCurrentConversation(null);
+    setMessages([]);
+    setSelectedAgent(agents.length > 0 ? agents[0] : null);
+  };
+
   const handleSendMessage = async (message) => {
     if (!selectedAgent) {
       alert("Veuillez sélectionner un agent");
       return;
     }
 
+    // Créer un message optimiste
+    const optimisticId = `temp-${Date.now()}`;
+    const optimisticMessage = {
+      id: optimisticId,
+      role: "human",
+      content: message,
+      created_at: new Date().toISOString(),
+      agent_id: selectedAgent.id,
+      conversation_id: currentConversation?.id,
+    };
+
+    // Ajouter immédiatement à l'interface
+    addMessage(optimisticMessage);
     setIsLoading(true);
+
     try {
       const response = await conversationsAPI.sendMessage({
         message,
@@ -91,8 +112,10 @@ export default function ChatPage() {
         conversation_id: currentConversation?.id,
       });
 
-      // Ajouter les messages à l'affichage
-      addMessage(response.data.user_message);
+      // Mettre à jour le message utilisateur avec la réponse du serveur (vrai ID, timestamp, etc.)
+      updateMessage(optimisticId, response.data.user_message);
+
+      // Ajouter la réponse de l'agent
       addMessage(response.data.ai_message);
 
       // Mettre à jour la conversation courante
@@ -106,6 +129,9 @@ export default function ChatPage() {
     } catch (error) {
       console.error("Erreur lors de l'envoi du message:", error);
       alert("Erreur lors de l'envoi du message");
+      // En cas d'erreur, on pourrait retirer le message optimiste ou le marquer en erreur
+      // Pour l'instant on laisse tel quel ou on pourrait le retirer
+      // setMessages(messages.filter(m => m.id !== optimisticId));
     } finally {
       setIsLoading(false);
     }
@@ -118,6 +144,7 @@ export default function ChatPage() {
           conversations={conversations}
           onSelectConversation={handleSelectConversation}
           onDeleteConversation={handleDeleteConversation}
+          onNewConversation={handleNewConversation}
           currentConversationId={currentConversation?.id}
         />
       )}
@@ -130,7 +157,7 @@ export default function ChatPage() {
           onToggleSidebar={toggleSidebar}
         />
 
-        <ChatWindow messages={messages} />
+        <ChatWindow messages={messages} isLoading={isLoading} />
 
         <ChatInput
           onSendMessage={handleSendMessage}

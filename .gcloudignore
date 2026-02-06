@@ -1,0 +1,65 @@
+# Git files
+.git
+.gitignore
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.env.*
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation
+README.md
+QUICKSTART.md
+API.md
+LICENSE
+DEPLOY_GCP.md
+
+# Docker
+docker-compose.yml
+Dockerfile
+docker-entrypoint.sh
+*.local.dockerfile
+
+# Scripts
+start.ps1
+stop.ps1
+
+# Node modules (but keep frontend folder)
+node_modules/
+
+# Tests
+tests/
+*.test.py
+pytest.ini
+.coverage
+htmlcov/
+
+# Database
+*.db
+*.sqlite3
+db.sqlite3
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

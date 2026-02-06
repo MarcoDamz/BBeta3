@@ -23,6 +23,13 @@ db.sqlite3-journal
 # Environment
 .env
 .env.local
+.env.*.local
+*.env
+
+# GCP
+.gcloud/
+gcp-key.json
+service-account*.json
 
 # IDEs
 .vscode/

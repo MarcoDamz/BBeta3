@@ -104,11 +104,13 @@ BBeta3/
 
 ## 🚦 Installation et Démarrage
 
-### Prérequis
+### Déploiement Local (Développement)
+
+#### Prérequis
 - Docker Desktop (Windows/Mac) ou Docker Engine + Docker Compose (Linux)
 - Clé API OpenAI
 
-### 1. Cloner et Configurer
+#### 1. Cloner et Configurer
 
 ```powershell
 # Cloner le dépôt (si depuis Git)
@@ -119,7 +121,7 @@ cd BBeta3
 cp .env.example .env
 ```
 
-### 2. Configurer les Variables d'Environnement
+#### 2. Configurer les Variables d'Environnement
 
 Éditer le fichier `.env` et **OBLIGATOIREMENT** renseigner votre clé API :
 
@@ -131,7 +133,6 @@ OPENAI_API_KEY=sk-your-real-openai-key-here
 # Laissez vide pour utiliser l'API officielle OpenAI
 # Utile pour : proxies, Azure OpenAI, endpoints personnalisés
 OPENAI_API_BASE=
-```
 
 # Optionnel - Modifier si besoin
 POSTGRES_PASSWORD=your-secure-password
@@ -139,26 +140,57 @@ DJANGO_SUPERUSER_USERNAME=admin
 DJANGO_SUPERUSER_PASSWORD=your-secure-password
 ```
 
-### 3. Lancer l'Application
+#### 3. Lancer l'Application
 
 ```powershell
-# Construire et démarrer tous les services
+# Windows (PowerShell)
+.\start.ps1
+
+# Linux/Mac
 docker-compose up --build
 
 # Ou en mode détaché (arrière-plan)
 docker-compose up -d --build
 ```
 
-### 4. Accéder à l'Application
+#### 4. Accéder à l'Application
 
 - **Frontend (Interface utilisateur)** : http://localhost:3000
 - **Backend API (Documentation)** : http://localhost:8000/api/
 - **Admin Django** : http://localhost:8000/admin/
 
-### 5. Identifiants par Défaut
+#### 5. Identifiants par Défaut
 
 - **Username** : `admin`
 - **Password** : `admin123` (ou celui défini dans `.env`)
+
+### 🌐 Déploiement sur Google Cloud Platform (Production)
+
+Pour déployer ChatAgentB en production sur GCP avec Cloud Run :
+
+#### Déploiement Automatique
+
+```powershell
+# Windows
+.\deploy-gcp.ps1 -ProjectId "mon-projet-gcp" -Region "europe-west1"
+
+# Linux/Mac
+chmod +x deploy-gcp.sh
+./deploy-gcp.sh mon-projet-gcp europe-west1
+```
+
+#### Documentation Complète
+
+- **[QUICKSTART_GCP.md](./QUICKSTART_GCP.md)** - Démarrage rapide sur GCP (5 minutes)
+- **[DEPLOY_GCP.md](./DEPLOY_GCP.md)** - Guide complet de déploiement GCP
+
+Le déploiement GCP inclut :
+- ✅ Cloud Run pour le backend, frontend et worker
+- ✅ Cloud SQL PostgreSQL (base de données managée)
+- ✅ Memorystore Redis (cache et broker Celery)
+- ✅ Secret Manager (gestion sécurisée des secrets)
+- ✅ Autoscaling automatique
+- ✅ SSL/HTTPS automatique
 
 ## 🎯 Utilisation
 
@@ -416,3 +448,10 @@ Développé pour démonstration d'architecture moderne avec Django, React, Celer
 ---
 
 **Note** : Ce projet nécessite une clé API OpenAI pour fonctionner. Les modèles LLM génèrent des coûts selon votre utilisation.
+
+## 📚 Documentation
+
+See [docs/](docs/) folder for complete documentation:
+- [GCP Deployment](docs/deployment/gcp/README.md)
+- [Bug Fixes](docs/fixes/README.md)
+- [API Reference](docs/api/API.md)

@@ -6,12 +6,16 @@ export default function Sidebar({
   conversations,
   onSelectConversation,
   onDeleteConversation,
+  onNewConversation,
   currentConversationId,
 }) {
   return (
     <div className="w-64 bg-sidebar-bg text-white flex flex-col h-screen">
       <div className="p-4 border-b border-gray-700">
-        <button className="w-full bg-transparent border border-white/20 hover:bg-white/10 text-white rounded-lg p-3 flex items-center justify-center gap-2">
+        <button
+          onClick={onNewConversation}
+          className="w-full bg-transparent border border-white/20 hover:bg-white/10 text-white rounded-lg p-3 flex items-center justify-center gap-2"
+        >
           <MessageSquare size={20} />
           <span>Nouvelle conversation</span>
         </button>

@@ -3,6 +3,7 @@ Django>=5.0,<6.0
 djangorestframework>=3.14.0
 django-cors-headers>=4.3.0
 psycopg2-binary>=2.9.9
+whitenoise>=6.6.0
 
 # ASGI Server
 uvicorn[standard]>=0.25.0
@@ -24,5 +25,6 @@ djangorestframework-simplejwt>=5.3.1
 python-dotenv>=1.0.0
 
 # Utils
+debugpy
 python-dateutil>=2.8.2
 pytz>=2023.3

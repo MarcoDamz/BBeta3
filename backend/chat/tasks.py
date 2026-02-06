@@ -1,6 +1,7 @@
 """
 Tâches Celery pour les opérations asynchrones.
 """
+
 from celery import shared_task
 from django.contrib.auth import get_user_model
 from agents.models import Agent
@@ -17,25 +18,25 @@ def generate_conversation_title(conversation_id: int):
     """
     try:
         conversation = Conversation.objects.get(id=conversation_id)
-        
+
         # Si la conversation a déjà un titre, ne rien faire
         if conversation.title:
             return f"Conversation {conversation_id} a déjà un titre"
-        
+
         # Récupérer le premier message humain
-        first_message = conversation.messages.filter(role='human').first()
+        first_message = conversation.messages.filter(role="human").first()
         if not first_message:
             return f"Aucun message humain trouvé pour la conversation {conversation_id}"
-        
+
         # Générer le titre
         title = LLMService.generate_title(first_message.content)
-        
+
         # Sauvegarder
         conversation.title = title
-        conversation.save(update_fields=['title'])
-        
+        conversation.save(update_fields=["title"])
+
         return f"Titre généré pour la conversation {conversation_id}: {title}"
-    
+
     except Conversation.DoesNotExist:
         return f"Conversation {conversation_id} introuvable"
     except Exception as e:
@@ -43,8 +44,13 @@ def generate_conversation_title(conversation_id: int):
 
 
 @shared_task
-def run_auto_chat(agent_a_id: int, agent_b_id: int, initial_message: str, 
-                  iterations: int, user_id: int):
+def run_auto_chat(
+    agent_a_id: int,
+    agent_b_id: int,
+    initial_message: str,
+    iterations: int,
+    user_id: int,
+):
     """
     Exécute une conversation automatique entre deux agents.
     """
@@ -52,59 +58,59 @@ def run_auto_chat(agent_a_id: int, agent_b_id: int, initial_message: str,
         agent_a = Agent.objects.get(id=agent_a_id)
         agent_b = Agent.objects.get(id=agent_b_id)
         user = User.objects.get(id=user_id)
-        
+
         # Créer la conversation
         conversation = Conversation.objects.create(
             title=f"AUTO: {agent_a.name} ↔ {agent_b.name}",
-            conversation_type='auto',
-            user=user
+            conversation_type="auto",
+            user=user,
         )
         conversation.agents.add(agent_a, agent_b)
-        
+
         # Message initial
         Message.objects.create(
             conversation=conversation,
-            role='human',
+            role="ai",
             content=initial_message,
-            is_auto_chat=True
+            is_auto_chat=True,
         )
-        
+
         # Historique de conversation
-        history = [{'role': 'human', 'content': initial_message}]
-        
+        history = [{"role": "ai", "content": initial_message}]
+
         # Alternance entre les deux agents
         for i in range(iterations):
             # Agent A répond
-            current_agent = agent_a if i % 2 == 0 else agent_b
-            
+            current_agent = agent_a if i % 2 == 1 else agent_b
+
             response = LLMService.generate_response(current_agent, history)
-            
+
             # Sauvegarder le message
             Message.objects.create(
                 conversation=conversation,
-                role='ai',
+                role="ai",
                 content=response,
                 agent=current_agent,
                 is_auto_chat=True,
-                metadata={'iteration': i + 1}
+                metadata={"iteration": i + 1},
             )
-            
+
             # Ajouter à l'historique
-            history.append({'role': 'ai', 'content': response})
-            
+            history.append({"role": "ai", "content": response})
+
             # Préparer le prochain tour (le message de l'IA devient le prompt pour l'autre agent)
-            history.append({'role': 'human', 'content': response})
-        
+            history.append({"role": "human", "content": response})
+
         return {
-            'status': 'success',
-            'conversation_id': conversation.id,
-            'total_messages': iterations + 1,
-            'message': f"Auto-chat terminé: {iterations} échanges entre {agent_a.name} et {agent_b.name}"
+            "status": "success",
+            "conversation_id": conversation.id,
+            "total_messages": iterations + 1,
+            "message": f"Auto-chat terminé: {iterations} échanges entre {agent_a.name} et {agent_b.name}",
         }
-    
+
     except Agent.DoesNotExist:
-        return {'status': 'error', 'message': 'Un ou plusieurs agents introuvables'}
+        return {"status": "error", "message": "Un ou plusieurs agents introuvables"}
     except User.DoesNotExist:
-        return {'status': 'error', 'message': 'Utilisateur introuvable'}
+        return {"status": "error", "message": "Utilisateur introuvable"}
     except Exception as e:
-        return {'status': 'error', 'message': f'Erreur: {str(e)}'}
+        return {"status": "error", "message": f"Erreur: {str(e)}"}

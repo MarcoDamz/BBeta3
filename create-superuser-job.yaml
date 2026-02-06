@@ -1,0 +1,39 @@
+steps:
+  # Create superuser using Django management command
+  - name: "gcr.io/bridgetbeta/chatagentb-backend:latest"
+    id: "create-superuser"
+    entrypoint: "python"
+    args:
+      - "manage.py"
+      - "shell"
+      - "-c"
+      - |
+        from django.contrib.auth import get_user_model;
+        User = get_user_model();
+        username = 'admin';
+        email = 'admin@admin.fr';
+        password = '3RUwJfGr14KWVv0n';
+        if not User.objects.filter(username=username).exists():
+            User.objects.create_superuser(username, email, password);
+            print(f'✅ Superuser {username} created successfully!');
+        else:
+            print(f'⚠️ Superuser {username} already exists!');
+    env:
+      - "DEBUG=False"
+      - "POSTGRES_HOST=/cloudsql/bridgetbeta:europe-west1:chatagentb-db"
+      - "POSTGRES_DB=chatagentb"
+      - "POSTGRES_USER=chatagentb"
+    secretEnv:
+      - "SECRET_KEY"
+      - "POSTGRES_PASSWORD"
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/bridgetbeta/secrets/chatagentb-django-secret/versions/latest
+      env: "SECRET_KEY"
+    - versionName: projects/bridgetbeta/secrets/chatagentb-db-password/versions/4
+      env: "POSTGRES_PASSWORD"
+
+options:
+  dynamic_substitutions: true
+  logging: CLOUD_LOGGING_ONLY

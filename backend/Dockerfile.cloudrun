@@ -1,0 +1,37 @@
+# Dockerfile optimisé pour Cloud Run
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Installation des dépendances système
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Installation des dépendances Python
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir gunicorn gevent
+
+# Copie du code de l'application
+COPY . .
+
+# Variables d'environnement
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PORT=8080
+
+# Collecte des fichiers statiques
+RUN python manage.py collectstatic --noinput || true
+
+# Script de démarrage pour Cloud Run
+COPY docker-entrypoint-cloudrun.sh /docker-entrypoint-cloudrun.sh
+RUN chmod +x /docker-entrypoint-cloudrun.sh
+
+EXPOSE 8080
+
+ENTRYPOINT ["/docker-entrypoint-cloudrun.sh"]

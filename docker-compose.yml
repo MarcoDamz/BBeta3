@@ -1,5 +1,4 @@
-version: '3.8'
-
+# version: '3.8'
 services:
   # PostgreSQL Database
   db:
@@ -41,11 +40,18 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: chatagentb-backend
-    command: uvicorn chatagentb.asgi:application --host 0.0.0.0 --port 8000 --reload
+    command: >
+      python -m debugpy --listen 0.0.0.0:5678 -m 
+      uvicorn chatagentb.asgi:application 
+      --host 0.0.0.0 
+      --port 8000 
+      --reload 
+    # uvicorn chatagentb.asgi:application --host 0.0.0.0 --port 8000 --reload # Commande de lancement sans debugpy
     volumes:
       - ./backend:/app
     ports:
       - "8000:8000"
+      - "5678:5678" # Port de debug
     environment:
       - DEBUG=${DEBUG:-True}
       - SECRET_KEY=${SECRET_KEY:-django-insecure-dev-key}
@@ -110,11 +116,17 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: builder
     container_name: chatagentb-frontend
     ports:
-      - "3000:80"
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app           # IMPORTANT : lie votre code local au dossier /app du conteneur
+      - /app/node_modules         # Évite d'écraser les packages installés dans le Docker
+    command: npm run dev -- --host 0.0.0.0
     environment:
       - VITE_API_URL=http://localhost:8000/api
+      - CHOKIDAR_USEPOLLING=true  # Indispensable pour que Vite détecte les changements de fichiers dans Docker
     depends_on:
       - backend
     networks:

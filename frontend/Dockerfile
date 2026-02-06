@@ -1,27 +1,15 @@
-# Stage 1: Build
 FROM node:20-alpine as builder
 
 WORKDIR /app
 
-# Installation des dépendances
 COPY package.json package-lock.json* ./
 RUN npm install
 
-# Copie du code source
+# En développement, on ne fait PAS "RUN npm run build"
+# On ne copie PAS le code ici si on utilise les volumes dans docker-compose
 COPY . .
 
-# Build de production
-RUN npm run build
+EXPOSE 3000
 
-# Stage 2: Production avec Nginx
-FROM nginx:alpine
-
-# Copie des fichiers build
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Configuration Nginx personnalisée
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# On lance le serveur de développement de Vite
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

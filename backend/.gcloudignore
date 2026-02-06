@@ -1,0 +1,59 @@
+# Git files
+.git
+.gitignore
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.env.*
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation
+README.md
+QUICKSTART.md
+API.md
+LICENSE
+
+# Docker
+docker-compose.yml
+Dockerfile
+docker-entrypoint.sh
+
+# Tests
+tests/
+*.test.py
+pytest.ini
+.coverage
+htmlcov/
+
+# Database
+*.db
+*.sqlite3
+db.sqlite3
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Static files (seront collectés lors du build)
+staticfiles/
