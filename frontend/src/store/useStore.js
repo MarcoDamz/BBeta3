@@ -29,6 +29,28 @@ export const useStore = create((set) => ({
   setCurrentConversation: (conversation) =>
     set({ currentConversation: conversation }),
 
+  // Folders
+  folders: [],
+  setFolders: (folders) => set({ folders }),
+  addFolder: (folder) =>
+    set((state) => ({ folders: [...state.folders, folder] })),
+  updateFolder: (folderId, updates) =>
+    set((state) => ({
+      folders: state.folders.map((f) =>
+        f.id === folderId ? { ...f, ...updates } : f,
+      ),
+    })),
+  deleteFolder: (folderId) =>
+    set((state) => ({
+      folders: state.folders.filter((f) => f.id !== folderId),
+    })),
+  moveConversationToFolder: (conversationId, folderId) =>
+    set((state) => ({
+      conversations: state.conversations.map((c) =>
+        c.id === conversationId ? { ...c, folder: folderId } : c,
+      ),
+    })),
+
   // Messages
   messages: [],
   setMessages: (messages) => set({ messages }),

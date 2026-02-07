@@ -3,7 +3,7 @@ import ChatInput from "../components/ChatInput";
 import ChatWindow from "../components/ChatWindow";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
-import { agentsAPI, conversationsAPI } from "../services/api";
+import { agentsAPI, conversationsAPI, foldersAPI } from "../services/api";
 import { useStore } from "../store/useStore";
 
 export default function ChatPage() {
@@ -22,6 +22,12 @@ export default function ChatPage() {
     updateMessage,
     isSidebarOpen,
     toggleSidebar,
+    folders,
+    setFolders,
+    addFolder,
+    updateFolder,
+    deleteFolder,
+    moveConversationToFolder,
   } = useStore();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -29,6 +35,7 @@ export default function ChatPage() {
   useEffect(() => {
     loadAgents();
     loadConversations();
+    loadFolders();
   }, []);
 
   const loadAgents = async () => {
@@ -46,6 +53,15 @@ export default function ChatPage() {
       setConversations(response.data.results || response.data);
     } catch (error) {
       console.error("Erreur lors du chargement des conversations:", error);
+    }
+  };
+
+  const loadFolders = async () => {
+    try {
+      const response = await foldersAPI.list();
+      setFolders(response.data.results || response.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des dossiers:", error);
     }
   };
 
@@ -82,6 +98,53 @@ export default function ChatPage() {
     setCurrentConversation(null);
     setMessages([]);
     setSelectedAgent(agents.length > 0 ? agents[0] : null);
+  };
+
+  const handleCreateFolder = async (folderName) => {
+    try {
+      const response = await foldersAPI.create({ name: folderName });
+      addFolder(response.data);
+    } catch (error) {
+      console.error("Erreur lors de la création du dossier:", error);
+      alert("Erreur lors de la création du dossier");
+    }
+  };
+
+  const handleDeleteFolder = async (folderId) => {
+    try {
+      await foldersAPI.delete(folderId);
+      deleteFolder(folderId);
+      // Recharger les conversations pour mettre à jour celles qui étaient dans le dossier
+      loadConversations();
+    } catch (error) {
+      console.error("Erreur lors de la suppression du dossier:", error);
+      alert("Erreur lors de la suppression du dossier");
+    }
+  };
+
+  const handleRenameFolder = async (folderId, currentName) => {
+    const newName = prompt("Nouveau nom du dossier:", currentName);
+    if (newName && newName.trim() && newName !== currentName) {
+      try {
+        const response = await foldersAPI.update(folderId, {
+          name: newName.trim(),
+        });
+        updateFolder(folderId, response.data);
+      } catch (error) {
+        console.error("Erreur lors du renommage du dossier:", error);
+        alert("Erreur lors du renommage du dossier");
+      }
+    }
+  };
+
+  const handleMoveConversation = async (conversationId, folderId) => {
+    try {
+      await conversationsAPI.moveToFolder(conversationId, folderId);
+      moveConversationToFolder(conversationId, folderId);
+    } catch (error) {
+      console.error("Erreur lors du déplacement de la conversation:", error);
+      alert("Erreur lors du déplacement de la conversation");
+    }
   };
 
   const handleSendMessage = async (message) => {
@@ -142,10 +205,15 @@ export default function ChatPage() {
       {isSidebarOpen && (
         <Sidebar
           conversations={conversations}
+          folders={folders}
           onSelectConversation={handleSelectConversation}
           onDeleteConversation={handleDeleteConversation}
           onNewConversation={handleNewConversation}
           currentConversationId={currentConversation?.id}
+          onCreateFolder={handleCreateFolder}
+          onDeleteFolder={handleDeleteFolder}
+          onRenameFolder={handleRenameFolder}
+          onMoveConversation={handleMoveConversation}
         />
       )}
 

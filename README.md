@@ -45,6 +45,13 @@ Application de Chatbot IA multi-agents permettant de discuter avec des agents co
 - ✅ Génération automatique de titres (via IA)
 - ✅ Sélection d'agent dynamique
 - ✅ Gestion multi-utilisateurs
+- ✅ **Organisation en dossiers** 🗂️ (v1.1.0)
+  - Création de dossiers personnalisés
+  - Arborescence avec sous-dossiers
+  - Drag & Drop des conversations
+  - Renommage et suppression
+  - Zone "Non classées"
+  - Compteurs par dossier
 
 ### 3. Mode Auto-Chat
 - ✅ Conversation automatique entre 2 agents
@@ -436,6 +443,18 @@ docker-compose restart worker
 - [ ] Tests unitaires et d'intégration
 - [ ] CI/CD (GitHub Actions)
 - [ ] Multi-langue (i18n)
+- [ ] Déplacement de dossiers par drag & drop
+- [ ] Recherche dans les dossiers
+- [ ] Icônes et couleurs personnalisées pour les dossiers
+
+## 📚 Documentation
+
+- **[Guide de démarrage rapide](QUICKSTART.md)** - Comment démarrer rapidement
+- **[Documentation API](docs/api/API.md)** - Endpoints de l'API REST
+- **[Fonctionnalités](docs/features/)** - Documentation détaillée des fonctionnalités
+  - **[Système de dossiers](docs/features/FOLDERS_QUICKSTART.md)** - Organisation des conversations
+- **[Architecture](docs/architecture/)** - Architecture backend et frontend
+- **[Changelog](CHANGELOG.md)** - Historique des versions
 
 ## 📄 Licence
 

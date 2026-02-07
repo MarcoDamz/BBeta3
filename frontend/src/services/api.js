@@ -43,6 +43,20 @@ export const conversationsAPI = {
   delete: (id) => api.delete(`/chat/conversations/${id}/`),
   sendMessage: (data) => api.post("/chat/conversations/send_message/", data),
   autoChat: (data) => api.post("/chat/conversations/auto_chat/", data),
+  moveToFolder: (id, folderId) =>
+    api.post(`/chat/conversations/${id}/move_to_folder/`, {
+      folder_id: folderId,
+    }),
+};
+
+// Folders
+export const foldersAPI = {
+  list: () => api.get("/chat/folders/"),
+  get: (id) => api.get(`/chat/folders/${id}/`),
+  create: (data) => api.post("/chat/folders/", data),
+  update: (id, data) => api.patch(`/chat/folders/${id}/`, data),
+  delete: (id) => api.delete(`/chat/folders/${id}/`),
+  reorder: (folders) => api.post("/chat/folders/reorder/", { folders }),
 };
 
 // LLM Models

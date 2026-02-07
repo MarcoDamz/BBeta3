@@ -9,13 +9,14 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.db.models import Prefetch
 from agents.models import Agent
-from .models import Conversation, Message
+from .models import Conversation, Message, Folder
 from .serializers import (
     ConversationSerializer,
     ConversationListSerializer,
     MessageSerializer,
     ChatMessageInputSerializer,
     AutoChatInputSerializer,
+    FolderSerializer,
 )
 from .llm_service import LLMService
 from .tasks import generate_conversation_title, run_auto_chat
@@ -225,6 +226,31 @@ class ConversationViewSet(viewsets.ModelViewSet):
             status=status.HTTP_202_ACCEPTED,
         )
 
+    @action(detail=True, methods=["post"])
+    def move_to_folder(self, request, pk=None):
+        """Déplacer une conversation dans un dossier."""
+        conversation = self.get_object()
+        folder_id = request.data.get("folder_id")
+
+        if folder_id:
+            try:
+                # Vérifier que le dossier appartient à l'utilisateur
+                if request.user.is_authenticated:
+                    folder = Folder.objects.get(id=folder_id, user=request.user)
+                else:
+                    folder = Folder.objects.get(id=folder_id)
+                conversation.folder = folder
+            except Folder.DoesNotExist:
+                return Response(
+                    {"error": "Dossier non trouvé"}, status=status.HTTP_404_NOT_FOUND
+                )
+        else:
+            # Retirer du dossier
+            conversation.folder = None
+
+        conversation.save()
+        return Response(ConversationListSerializer(conversation).data)
+
 
 class MessageViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -239,3 +265,49 @@ class MessageViewSet(viewsets.ReadOnlyModelViewSet):
         return Message.objects.filter(
             conversation__user=self.request.user
         ).select_related("conversation", "agent")
+
+
+class FolderViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet pour la gestion des dossiers.
+    """
+
+    serializer_class = FolderSerializer
+    permission_classes = []  # Temporairement pour le développement
+
+    def get_queryset(self):
+        """Retourne les dossiers de l'utilisateur (racine uniquement)."""
+        if self.request.user.is_authenticated:
+            return Folder.objects.filter(user=self.request.user, parent=None)
+        # Pour le dev: retourner tous les dossiers racine
+        return Folder.objects.filter(parent=None)
+
+    def perform_create(self, serializer):
+        """Associe le dossier à l'utilisateur connecté."""
+        if self.request.user.is_authenticated:
+            serializer.save(user=self.request.user)
+        else:
+            # Pour le dev: utiliser un user par défaut
+            from django.contrib.auth import get_user_model
+
+            User = get_user_model()
+            default_user = User.objects.filter(is_superuser=True).first()
+            serializer.save(user=default_user)
+
+    @action(detail=False, methods=["post"])
+    def reorder(self, request):
+        """Réorganiser les dossiers."""
+        folder_orders = request.data.get("folders", [])
+
+        for item in folder_orders:
+            try:
+                if request.user.is_authenticated:
+                    folder = Folder.objects.get(id=item["id"], user=request.user)
+                else:
+                    folder = Folder.objects.get(id=item["id"])
+                folder.order = item["order"]
+                folder.save()
+            except (Folder.DoesNotExist, KeyError):
+                pass
+
+        return Response({"status": "success"})
