@@ -134,10 +134,10 @@ class ConversationViewSet(viewsets.ModelViewSet):
             )
             logger.info(f"User message saved: {user_message.id}")
 
-            # Générer le titre si c'est le premier message
-            if conversation.messages.count() == 1:
+            # Générer le titre si c'est le cinquième message
+            if conversation.messages.count() == 5:
                 logger.info("Triggering title generation")
-                generate_conversation_title.delay(conversation.id)
+                generate_conversation_title.delay(conversation.id, agent.id)
 
             # Construire l'historique de conversation
             history = [

@@ -84,9 +84,11 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: chatagentb-worker
-    command: celery -A chatagentb worker --loglevel=info
+    command: python -m debugpy --listen 0.0.0.0:5679 -m celery -A chatagentb worker --loglevel=info
     volumes:
       - ./backend:/app
+    ports:
+      - "5679:5679" # Port pour le worker (optionnel, à adapter selon vos besoins)
     environment:
       - DEBUG=${DEBUG:-True}
       - SECRET_KEY=${SECRET_KEY:-django-insecure-dev-key}

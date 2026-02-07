@@ -2,21 +2,27 @@
 Tâches Celery pour les opérations asynchrones.
 """
 
+import logging
 from celery import shared_task
 from django.contrib.auth import get_user_model
 from agents.models import Agent
 from chat.models import Conversation, Message
 from chat.llm_service import LLMService
+from agents.models import Agent
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
 
 @shared_task
-def generate_conversation_title(conversation_id: int):
+def generate_conversation_title(conversation_id: int, agent_id: int):
     """
     Génère un titre pour une conversation en utilisant le premier message.
     """
     try:
+        logger.info(f"Generating title for conversation {conversation_id}")
+
         conversation = Conversation.objects.get(id=conversation_id)
 
         # Si la conversation a déjà un titre, ne rien faire
@@ -24,12 +30,44 @@ def generate_conversation_title(conversation_id: int):
             return f"Conversation {conversation_id} a déjà un titre"
 
         # Récupérer le premier message humain
-        first_message = conversation.messages.filter(role="human").first()
-        if not first_message:
-            return f"Aucun message humain trouvé pour la conversation {conversation_id}"
+        # Récupérer les 3 premiers messages
+        messages = Message.objects.filter(conversation=conversation).order_by(
+            "created_at"
+        )[:3]
+
+        if agent_id:
+            try:
+                agent = Agent.objects.get(id=agent_id)
+                logger.info(f"Using provided agent: {agent.name} (ID: {agent_id})")
+            except Agent.DoesNotExist:
+                logger.error(
+                    f"Agent {agent_id} not found, falling back to conversation.agents.first()"
+                )
+                agent = conversation.agents.first()
+        else:
+            agent = conversation.agents.first()
+            logger.info(
+                f"Using conversation's first agent: {agent.name if agent else 'None'}"
+            )
+
+        # Vérifier qu'on a bien un agent
+        if not agent:
+            error_msg = f"No agent found for conversation {conversation_id}"
+            logger.error(error_msg)
+            return f"Erreur: {error_msg}"
 
         # Générer le titre
-        title = LLMService.generate_title(first_message.content)
+        history = []
+        for msg in messages:
+            history.append(
+                {
+                    "role": msg.role,  # ✅ Dict avec 'role' et 'content'
+                    "content": msg.content,
+                }
+            )
+
+        # Appel de generate_title
+        title = LLMService.generate_title(agent, history)
 
         # Sauvegarder
         conversation.title = title

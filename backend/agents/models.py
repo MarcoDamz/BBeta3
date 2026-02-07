@@ -4,7 +4,7 @@ Modèles pour la gestion des agents IA.
 
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-from chatagentb.llm_config import get_llm_choices, DEFAULT_AGENT_MODEL
+from chatagentb.llm_config import get_llm_choices
 
 
 class Agent(models.Model):
@@ -49,7 +49,6 @@ class Agent(models.Model):
     llm_model = models.CharField(
         max_length=50,
         choices=get_llm_choices(),
-        default=DEFAULT_AGENT_MODEL,
         verbose_name="Modèle LLM",
         help_text="Modèle de langage utilisé par l'agent",
     )

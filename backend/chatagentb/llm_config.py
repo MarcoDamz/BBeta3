@@ -59,12 +59,6 @@ LLM_MODELS = {
     },
 }
 
-# Modèle par défaut pour la génération de titres
-DEFAULT_TITLE_MODEL = "gpt-3.5-turbo"
-
-# Modèle par défaut pour les nouveaux agents
-DEFAULT_AGENT_MODEL = "gpt-4o-mini"
-
 
 def get_llm_choices():
     """

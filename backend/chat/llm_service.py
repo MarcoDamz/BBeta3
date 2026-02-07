@@ -8,7 +8,7 @@ from langchain_openai import AzureChatOpenAI
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from django.conf import settings
 from agents.models import Agent
-from chatagentb.llm_config import get_model_config, DEFAULT_TITLE_MODEL
+from chatagentb.llm_config import get_model_config
 
 
 class LLMService:
@@ -81,30 +81,33 @@ class LLMService:
         return response.content
 
     @staticmethod
-    def generate_title(first_message: str) -> str:
+    def generate_title(agent: Agent, first_messages: List[Dict]) -> str:
         """
         Génère un titre court pour une conversation à partir du premier message.
         """
-        model_config = get_model_config(DEFAULT_TITLE_MODEL)
 
-        # Configuration de base
-        llm_config = {
-            "model": model_config["model_name"],
-            "temperature": 0.3,
-            "max_tokens": 50,
-            "api_key": settings.OPENAI_API_KEY,
-        }
+        llm = LLMService.get_llm(agent)
 
-        # Ajouter l'URL de base si elle est configurée
-        if settings.OPENAI_API_BASE:
-            llm_config["base_url"] = settings.OPENAI_API_BASE
+        context_lines = []
+        for msg in first_messages:
+            # Les messages sont des dict avec 'role' et 'content'
+            role = msg.get("role", "unknown")
+            content = msg.get("content", "")
 
-        llm = ChatOpenAI(**llm_config)
+            # Formater le rôle pour l'affichage
+            role_label = "Utilisateur" if role == "human" else "Assistant"
+
+            # Limiter le contenu à 200 caractères
+            content_preview = content[:200] + "..." if len(content) > 200 else content
+
+            context_lines.append(f"{role_label}: {content_preview}")
+
+        context = "\n".join(context_lines)
 
         prompt = f"""Génère un titre court (maximum 6 mots) pour cette conversation.
 Le titre doit être concis et descriptif.
 
-Message: {first_message}
+Message: {context}
 
 Titre:"""
 
